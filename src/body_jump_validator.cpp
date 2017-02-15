@@ -1,0 +1,66 @@
+/* TechDemo SFML/Box2D
+Copyright (C) 2016 Matadini (matadini@hotmail.com)
+
+This software is provided 'as-is', without any express
+or implied warranty. In no event will the authors be
+held liable for any damages arising from the use of this software.
+
+Permission is granted to anyone to use this software
+for any purpose, including commercial applications, and
+to alter it and redistribute it freely, subject to the
+following restrictions:
+
+1. The origin of this software must not be misrepresented;
+you must not claim that you wrote the original software.
+If you use this software in a product, an acknowledgment
+in the product documentation would be appreciated but is not required.
+
+2. Altered source versions must be plainly marked as such,
+and must not be misrepresented as being the original software.
+
+3. This notice may not be removed or altered from any source distribution.
+
+
+External libraries used by TechDemo SFML/Box2D
+-------------------------------
+* Qt5 is licensed under the LGPL license
+* PhysicsFS is licensed under the zlib license.
+* SFML is licensed under the zlib license.
+* Box2D is licensed under the zlib license. */
+
+
+#include "body_jump_validator.h"
+
+#include <Box2D/Box2D.h>
+#include "body_user_data.h"
+bool BodyJumpValidator::test(b2Body* body)
+{
+    if(body->GetContactList() != nullptr){
+
+        for(b2ContactEdge* it = body->GetContactList(); it != nullptr; it = it->next)
+        {
+            b2Contact* contact = it->contact;
+
+            b2Body* bodyA = contact->GetFixtureA()->GetBody();
+            b2Body* bodyB = contact->GetFixtureB()->GetBody();
+
+            if(bodyA != nullptr && bodyB != nullptr)
+            {
+                b2Body* bodyToCheck = nullptr;
+                if(bodyA == body){
+                    bodyToCheck = bodyB;
+                } else {
+                    bodyToCheck = bodyA;
+                }
+
+                BodyUserData* bodyUserData = (BodyUserData*)(bodyToCheck->GetUserData());
+                BodyUserData::Type bodyType = bodyUserData->getType();
+
+                if(bodyType == BodyUserData::Type::Map){
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
